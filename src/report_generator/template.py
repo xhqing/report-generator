@@ -108,8 +108,8 @@ def _build_toc(data):
         '<li><a href="#section1">一、市场数据</a></li>',
         '<li><a href="#section2">二、未来一周重大事件分析</a></li>',
         '<li><a href="#section3">三、指数研判</a></li>',
-        '<li><a href="#section4">四、个股分析</a></li>',
-        '<li><a href="#section5">五、ETF分析</a></li>',
+        '<li><a href="#section4">四、ETF分析</a></li>',
+        '<li><a href="#section5">五、个股分析</a></li>',
         '<li><a href="#section6">六、分析推理过程</a></li>',
         '<li><a href="#section7">七、参考资料</a></li>',
     ]
@@ -282,7 +282,7 @@ def _build_index_analysis_section(data):
 def _build_stock_analysis_section(data):
     items = data.get("stock_analysis", [])
     if not items:
-        return '<div class="section" id="section4"><h2>四、个股分析</h2><p class="placeholder">[个股分析待填充]</p></div>'
+        return '<div class="section" id="section5"><h2>五、个股分析</h2><p class="placeholder">[个股分析待填充]</p></div>'
 
     rows = ""
     for sa in items:
@@ -304,8 +304,8 @@ def _build_stock_analysis_section(data):
 </tr>"""
 
     return f"""
-<div class="section" id="section4">
-<h2>四、个股分析</h2>
+<div class="section" id="section5">
+<h2>五、个股分析</h2>
 <table class="data-table">
 <thead>
 <tr>
@@ -326,7 +326,7 @@ def _build_stock_analysis_section(data):
 def _build_etf_analysis_section(data):
     items = data.get("etf_analysis", [])
     if not items:
-        return '<div class="section" id="section5"><h2>五、ETF分析</h2><p class="placeholder">[ETF分析待填充]</p></div>'
+        return '<div class="section" id="section4"><h2>四、ETF分析</h2><p class="placeholder">[ETF分析待填充]</p></div>'
 
     rows = ""
     for ea in items:
@@ -348,8 +348,8 @@ def _build_etf_analysis_section(data):
 </tr>"""
 
     return f"""
-<div class="section" id="section5">
-<h2>五、ETF分析</h2>
+<div class="section" id="section4">
+<h2>四、ETF分析</h2>
 <table class="data-table">
 <thead>
 <tr>
@@ -520,8 +520,8 @@ def render_report(data):
     market_data = _build_market_data_section(data)
     events = _build_events_section(data)
     index_analysis = _build_index_analysis_section(data)
-    stock_analysis = _build_stock_analysis_section(data)
     etf_analysis = _build_etf_analysis_section(data)
+    stock_analysis = _build_stock_analysis_section(data)
     reasoning = _build_reasoning_section(data)
     references = _build_references_section(data)
     disclaimer = _build_disclaimer()
@@ -550,9 +550,9 @@ def render_report(data):
 
 {index_analysis}
 
-{stock_analysis}
-
 {etf_analysis}
+
+{stock_analysis}
 
 {reasoning}
 

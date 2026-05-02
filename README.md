@@ -11,54 +11,63 @@ MCP Server for generating market research reports in HTML format — 跨市场�
 - Auto-generate report filenames with timestamps (Beijing time)
 - Save reports to local files
 
-## Installation
+## Quick Start: Use in TRAE CN with uvx
 
-### Install from GitHub (Recommended)
+The recommended way to use this MCP service is through [uvx](https://docs.astral.sh/uv/guides/tools/), which lets you run the service directly from GitHub **without manual installation**.
+
+### Prerequisites
+
+Install [uv](https://docs.astral.sh/uv/) (includes `uvx`):
+
+```bash
+# macOS
+brew install uv
+
+# Or with curl
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+### Configure MCP Service in TRAE CN
+
+1. Open TRAE CN IDE
+2. Click the **Agent** icon in the left sidebar
+3. Click the **⚙️ Settings** icon next to the agent name
+4. Select **MCP Servers** tab
+5. Click **+ Add MCP Server**
+6. Paste the following JSON configuration:
+
+```json
+{
+  "mcpServers": {
+    "report-generator": {
+      "command": "uvx",
+      "args": ["--from", "git+https://github.com/xhqing/report-generator.git", "report-generator"]
+    }
+  }
+}
+```
+
+7. Save — the MCP service status should show as **Connected** (green dot)
+
+That's it! You can now use the report generation tools in your agent conversations. `uvx` will automatically fetch and run the latest version from GitHub every time the service starts.
+
+### How uvx Works
+
+- `uvx` is a zero-install runner: it creates an isolated virtual environment, installs the package from GitHub, and runs the command — all automatically
+- No need to `pip install`, no need to manage Python environments, no need to worry about dependency conflicts
+- Each run pulls the latest version from GitHub, so you always have the most up-to-date code
+
+## Other Installation Methods
+
+### Install via pip from GitHub
+
+If you prefer a traditional installation:
 
 ```bash
 pip install git+https://github.com/xhqing/report-generator.git
 ```
 
-### Install from Source
-
-```bash
-git clone https://github.com/xhqing/report-generator.git
-cd report-generator
-pip install .
-```
-
-### Verify Installation
-
-```bash
-report-generator --help
-```
-
-## Configure MCP Service in TRAE CN
-
-TRAE CN is an AI-powered IDE that supports MCP (Model Context Protocol) services. Follow these steps to configure the report-generator MCP service for your agent:
-
-### Step 1: Install the package
-
-Make sure you have installed `report-generator` using one of the methods above, and the `report-generator` command is available in your terminal.
-
-### Step 2: Open Agent MCP Settings
-
-1. Open TRAE CN IDE
-2. Click the **Agent** icon in the left sidebar (or press the shortcut)
-3. Click the **⚙️ Settings** icon next to the agent name
-4. Select **MCP Servers** tab
-5. Click **+ Add MCP Server**
-
-### Step 3: Add Configuration
-
-Choose **Command (Stdio)** mode and fill in:
-
-| Field | Value |
-|-------|-------|
-| **Name** | `report-generator` |
-| **Command** | `report-generator` |
-
-Or paste the following JSON directly into the configuration file:
+Then configure in TRAE CN:
 
 ```json
 {
@@ -70,38 +79,22 @@ Or paste the following JSON directly into the configuration file:
 }
 ```
 
-### Step 4: Verify Connection
+### Install from Source
 
-After adding, the MCP service status should show as **Connected** (green dot). You can now use the report generation tools in your agent conversations.
+```bash
+git clone https://github.com/xhqing/report-generator.git
+cd report-generator
+pip install .
+```
 
 ### Troubleshooting
 
-If the connection fails:
-
-1. **Check if `report-generator` is in PATH**: Run `which report-generator` in terminal
-2. **Use absolute path**: If the command is not found, use the full path instead:
-   ```json
-   {
-     "mcpServers": {
-       "report-generator": {
-         "command": "/absolute/path/to/report-generator"
-       }
-     }
-   }
-   ```
-   You can find the path by running: `which report-generator`
-3. **Check Python environment**: Make sure the Python environment where you installed the package is the same one TRAE CN uses
-4. **Use uvx (alternative)**: If you have [uv](https://docs.astral.sh/uv/) installed, you can use:
-   ```json
-   {
-     "mcpServers": {
-       "report-generator": {
-         "command": "uvx",
-         "args": ["--from", "git+https://github.com/xhqing/report-generator.git", "report-generator"]
-       }
-     }
-   }
-   ```
+| Problem | Solution |
+|---------|----------|
+| `uvx: command not found` | Install uv first: `brew install uv` or `curl -LsSf https://astral.sh/uv/install.sh \| sh` |
+| `report-generator: command not found` (pip install) | Use `which report-generator` to find the path, then use the absolute path in the config |
+| Python environment mismatch | Use the `uvx` method instead — it handles environments automatically |
+| Connection shows red dot in TRAE CN | Check that `uv` is in the PATH that TRAE CN uses; restart TRAE CN after installing uv |
 
 ## MCP Tools
 

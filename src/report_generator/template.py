@@ -104,35 +104,15 @@ def _build_header(data):
 
 
 def _build_toc(data):
-    has_events = bool(data.get("future_events"))
-    has_index = bool(data.get("index_analysis"))
-    has_stock = bool(data.get("stock_analysis"))
-    has_etf = bool(data.get("etf_analysis"))
-    has_reasoning = bool(data.get("reasoning", {}).get("macro_chain"))
-    has_refs = any(data.get("references", {}).values())
-
-    items = []
-    items.append('<li><a href="#section1">一、市场数据</a></li>')
-    if has_events:
-        items.append('<li><a href="#section2">二、未来一周重大事件分析</a></li>')
-    if has_index:
-        items.append(f'<li><a href="#section3">{"三" if has_events else "二"}、指数研判</a></li>')
-    if has_stock:
-        idx = sum(1 for x in [has_events, has_index] if x) + 2
-        cn = "一二三四五六七八九十"[idx - 1]
-        items.append(f'<li><a href="#section4">{cn}、个股分析</a></li>')
-    if has_etf:
-        idx = sum(1 for x in [has_events, has_index, has_stock] if x) + 2
-        cn = "一二三四五六七八九十"[idx - 1]
-        items.append(f'<li><a href="#section5">{cn}、ETF分析</a></li>')
-    if has_reasoning:
-        idx = sum(1 for x in [has_events, has_index, has_stock, has_etf] if x) + 2
-        cn = "一二三四五六七八九十"[idx - 1]
-        items.append(f'<li><a href="#section6">{cn}、分析推理过程</a></li>')
-    if has_refs:
-        idx = sum(1 for x in [has_events, has_index, has_stock, has_etf, has_reasoning] if x) + 2
-        cn = "一二三四五六七八九十"[idx - 1]
-        items.append(f'<li><a href="#section7">{cn}、参考资料</a></li>')
+    items = [
+        '<li><a href="#section1">一、市场数据</a></li>',
+        '<li><a href="#section2">二、未来一周重大事件分析</a></li>',
+        '<li><a href="#section3">三、指数研判</a></li>',
+        '<li><a href="#section4">四、个股分析</a></li>',
+        '<li><a href="#section5">五、ETF分析</a></li>',
+        '<li><a href="#section6">六、分析推理过程</a></li>',
+        '<li><a href="#section7">七、参考资料</a></li>',
+    ]
 
     return f"""
 <div class="toc">

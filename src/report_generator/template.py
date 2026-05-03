@@ -98,7 +98,7 @@ def _build_header(data):
     report_date = data.get("report_date", "") or '<span class="placeholder">[报告日期]</span>'
     return f"""
 <div class="header">
-<h1>跨市场重大事件与港股龙头策略研判</h1>
+<h1>全球金融市场标的定制化深度分析报告</h1>
 <div class="date">报告日期：{report_date}（北京时间）</div>
 </div>"""
 
@@ -509,7 +509,7 @@ def _build_footer(data):
     gen_time = data.get("generation_time", "") or '<span class="placeholder">[生成时间]</span>'
     return f"""
 <div class="footer">
-<p>跨市场重大事件与港股龙头策略研判 | 报告生成时间：{gen_time}（北京时间）</p>
+<p>全球金融市场标的定制化深度分析报告 | 报告生成时间：{gen_time}（北京时间）</p>
 <p>数据来源：Longport API、新华网、财联社、新浪财经、东方财富网、Nasdaq官网、AP News等</p>
 </div>"""
 
@@ -532,7 +532,7 @@ def render_report(data):
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>跨市场重大事件与港股龙头策略研判 - {data.get('report_date', '')}</title>
+<title>全球金融市场标的定制化深度分析报告 - {data.get('report_date', '')}</title>
 <style>
 {CSS_STYLES}
 </style>

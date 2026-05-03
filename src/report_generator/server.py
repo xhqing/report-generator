@@ -17,17 +17,24 @@ mcp = FastMCP(
 
 
 @mcp.tool()
-def generate_report(data: str = "{}") -> str:
-    """Generate a complete HTML research report from structured data.
+def generate_report(data: str = "{}", output_dir: str = "") -> str:
+    """Generate a complete HTML research report from structured data and save to file.
 
     Args:
         data: JSON string containing report data. When empty or "{}", generates an empty template
               with placeholder structure. The data should follow the report data schema
               (use get_report_schema to see the full schema).
+        output_dir: Absolute path to the directory where the report will be saved. This is required.
 
     Returns:
-        Complete HTML research report as a string.
+        JSON string with the saved file path or error message.
     """
+    if not output_dir:
+        return json.dumps({"error": "output_dir is required and must be an absolute path"}, ensure_ascii=False)
+
+    if not os.path.isabs(output_dir):
+        return json.dumps({"error": f"output_dir must be an absolute path, got: {output_dir}"}, ensure_ascii=False)
+
     try:
         parsed = json.loads(data) if data else {}
     except json.JSONDecodeError as e:
@@ -38,10 +45,30 @@ def generate_report(data: str = "{}") -> str:
 
     try:
         html_content = render_report(parsed)
-        return html_content
     except Exception as e:
         logger.error(f"Report generation failed: {e}")
         return json.dumps({"error": f"Report generation failed: {e}"}, ensure_ascii=False)
+
+    try:
+        os.makedirs(output_dir, exist_ok=True)
+        from datetime import datetime
+        import pytz
+
+        bj_tz = pytz.timezone("Asia/Shanghai")
+        now_bj = datetime.now(bj_tz)
+        existing = [f for f in os.listdir(output_dir) if f.startswith("YB_") and f.endswith(".html")]
+        next_num = len(existing) + 1
+        timestamp_str = now_bj.strftime("%Y%m%d%H%M%S")
+        filename = f"YB_{next_num:04d}_{timestamp_str}.html"
+        filepath = os.path.join(output_dir, filename)
+
+        with open(filepath, "w", encoding="utf-8") as f:
+            f.write(html_content)
+
+        return json.dumps({"success": True, "filepath": filepath, "filename": filename}, ensure_ascii=False)
+    except Exception as e:
+        logger.error(f"Report save failed: {e}")
+        return json.dumps({"error": f"Report save failed: {e}"}, ensure_ascii=False)
 
 
 @mcp.tool()
@@ -73,14 +100,17 @@ def save_report(html_content: str, output_dir: str = "", filename: str = "") -> 
 
     Args:
         html_content: The HTML content to save.
-        output_dir: Directory to save the report. Defaults to the current working directory/YB_000X.
+        output_dir: Absolute path to the directory where the report will be saved. Required.
         filename: Filename for the report. Defaults to auto-generated name with timestamp.
 
     Returns:
         JSON with the saved file path or error message.
     """
     if not output_dir:
-        output_dir = os.path.join(os.getcwd(), "YB_000X")
+        return json.dumps({"error": "output_dir is required and must be an absolute path"}, ensure_ascii=False)
+
+    if not os.path.isabs(output_dir):
+        return json.dumps({"error": f"output_dir must be an absolute path, got: {output_dir}"}, ensure_ascii=False)
 
     os.makedirs(output_dir, exist_ok=True)
 

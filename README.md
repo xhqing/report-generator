@@ -41,11 +41,16 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
   "mcpServers": {
     "report-generator": {
       "command": "uvx",
-      "args": ["--from", "git+https://github.com/xhqing/report-generator.git", "report-generator"]
+      "args": ["--from", "git+https://github.com/xhqing/report-generator.git", "report-generator"],
+      "env": {
+        "REPORT_OUTPUT_DIR": "/Users/yourname/Documents/reports"
+      }
     }
   }
 }
 ```
+
+> **Important**: Replace `/Users/yourname/Documents/reports` with your actual absolute path. This is where generated reports will be saved. The `REPORT_OUTPUT_DIR` environment variable sets the default output directory, so you don't need to specify `output_dir` every time you call `generate_report`.
 
 7. Save — the MCP service status should show as **Connected** (green dot)
 

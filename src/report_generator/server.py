@@ -10,10 +10,22 @@ from report_generator.template import render_report
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+DEFAULT_OUTPUT_DIR = os.environ.get("REPORT_OUTPUT_DIR", "")
+
 mcp = FastMCP(
     "report-generator",
     instructions="Market research report generator MCP Server. Generates HTML research reports from structured data. Supports empty template generation when no data is provided.",
 )
+
+
+def _resolve_output_dir(output_dir: str) -> str:
+    if not output_dir:
+        output_dir = DEFAULT_OUTPUT_DIR
+    if not output_dir:
+        return ""
+    if not os.path.isabs(output_dir):
+        return ""
+    return output_dir
 
 
 @mcp.tool()
@@ -24,16 +36,17 @@ def generate_report(data: str = "{}", output_dir: str = "") -> str:
         data: JSON string containing report data. When empty or "{}", generates an empty template
               with placeholder structure. The data should follow the report data schema
               (use get_report_schema to see the full schema).
-        output_dir: Absolute path to the directory where the report will be saved. This is required.
+        output_dir: Absolute path to the directory where the report will be saved.
+                    If not provided, falls back to the REPORT_OUTPUT_DIR environment variable.
+                    One of them must be set to a valid absolute path.
 
     Returns:
         JSON string with the saved file path or error message.
     """
-    if not output_dir:
-        return json.dumps({"error": "output_dir is required and must be an absolute path"}, ensure_ascii=False)
-
-    if not os.path.isabs(output_dir):
-        return json.dumps({"error": f"output_dir must be an absolute path, got: {output_dir}"}, ensure_ascii=False)
+    resolved = _resolve_output_dir(output_dir)
+    if not resolved:
+        hint = "Set output_dir parameter or configure REPORT_OUTPUT_DIR env var in mcp.json"
+        return json.dumps({"error": f"output_dir is required and must be an absolute path. {hint}"}, ensure_ascii=False)
 
     try:
         parsed = json.loads(data) if data else {}
@@ -50,17 +63,17 @@ def generate_report(data: str = "{}", output_dir: str = "") -> str:
         return json.dumps({"error": f"Report generation failed: {e}"}, ensure_ascii=False)
 
     try:
-        os.makedirs(output_dir, exist_ok=True)
+        os.makedirs(resolved, exist_ok=True)
         from datetime import datetime
         import pytz
 
         bj_tz = pytz.timezone("Asia/Shanghai")
         now_bj = datetime.now(bj_tz)
-        existing = [f for f in os.listdir(output_dir) if f.startswith("YB_") and f.endswith(".html")]
+        existing = [f for f in os.listdir(resolved) if f.startswith("YB_") and f.endswith(".html")]
         next_num = len(existing) + 1
         timestamp_str = now_bj.strftime("%Y%m%d%H%M%S")
         filename = f"YB_{next_num:04d}_{timestamp_str}.html"
-        filepath = os.path.join(output_dir, filename)
+        filepath = os.path.join(resolved, filename)
 
         with open(filepath, "w", encoding="utf-8") as f:
             f.write(html_content)
@@ -100,19 +113,20 @@ def save_report(html_content: str, output_dir: str = "", filename: str = "") -> 
 
     Args:
         html_content: The HTML content to save.
-        output_dir: Absolute path to the directory where the report will be saved. Required.
+        output_dir: Absolute path to the directory where the report will be saved.
+                    If not provided, falls back to the REPORT_OUTPUT_DIR environment variable.
+                    One of them must be set to a valid absolute path.
         filename: Filename for the report. Defaults to auto-generated name with timestamp.
 
     Returns:
         JSON with the saved file path or error message.
     """
-    if not output_dir:
-        return json.dumps({"error": "output_dir is required and must be an absolute path"}, ensure_ascii=False)
+    resolved = _resolve_output_dir(output_dir)
+    if not resolved:
+        hint = "Set output_dir parameter or configure REPORT_OUTPUT_DIR env var in mcp.json"
+        return json.dumps({"error": f"output_dir is required and must be an absolute path. {hint}"}, ensure_ascii=False)
 
-    if not os.path.isabs(output_dir):
-        return json.dumps({"error": f"output_dir must be an absolute path, got: {output_dir}"}, ensure_ascii=False)
-
-    os.makedirs(output_dir, exist_ok=True)
+    os.makedirs(resolved, exist_ok=True)
 
     if not filename:
         from datetime import datetime
@@ -120,12 +134,12 @@ def save_report(html_content: str, output_dir: str = "", filename: str = "") -> 
 
         bj_tz = pytz.timezone("Asia/Shanghai")
         now_bj = datetime.now(bj_tz)
-        existing = [f for f in os.listdir(output_dir) if f.startswith("YB_") and f.endswith(".html")]
+        existing = [f for f in os.listdir(resolved) if f.startswith("YB_") and f.endswith(".html")]
         next_num = len(existing) + 1
         timestamp_str = now_bj.strftime("%Y%m%d%H%M%S")
         filename = f"YB_{next_num:04d}_{timestamp_str}.html"
 
-    filepath = os.path.join(output_dir, filename)
+    filepath = os.path.join(resolved, filename)
 
     try:
         with open(filepath, "w", encoding="utf-8") as f:

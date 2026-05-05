@@ -78,7 +78,10 @@ Then configure in TRAE CN:
 {
   "mcpServers": {
     "report-generator": {
-      "command": "report-generator"
+      "command": "report-generator",
+      "env": {
+        "REPORT_OUTPUT_DIR": "/Users/yourname/Documents/reports"
+      }
     }
   }
 }
@@ -195,6 +198,6 @@ pytest
 ruff check src/
 ```
 
-## License
+## 版权声明
 
-AGPL-3.0
+© 2026 xhqing. 保留所有权利。未经授权，禁止复制、修改、分发或商业使用本项目的任何部分。

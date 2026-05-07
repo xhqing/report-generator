@@ -133,7 +133,6 @@ def _build_market_data_section(data):
 <td>{_esc(item.get("code"))}</td>
 <td>{source_link}</td>
 <td>{_esc(item.get("timestamp"))}</td>
-<td>{_make_source_link("来源", item.get("source"))}</td>
 </tr>"""
 
     stock_rows = ""
@@ -143,7 +142,6 @@ def _build_market_data_section(data):
 <td>{_esc(item.get("code"))}</td>
 <td>{_fmt_price(item.get("price"))}</td>
 <td>{_esc(item.get("timestamp"))}</td>
-<td>{_make_source_link("来源", item.get("source"))}</td>
 </tr>"""
 
     etf_rows = ""
@@ -153,15 +151,14 @@ def _build_market_data_section(data):
 <td>{_esc(item.get("code"))}</td>
 <td>{_fmt_price(item.get("price"))}</td>
 <td>{_esc(item.get("timestamp"))}</td>
-<td>{_make_source_link("来源", item.get("source"))}</td>
 </tr>"""
 
     if not index_rows:
-        index_rows = '<tr><td colspan="5" class="placeholder">[指数数据待填充]</td></tr>'
+        index_rows = '<tr><td colspan="4" class="placeholder">[指数数据待填充]</td></tr>'
     if not stock_rows:
-        stock_rows = '<tr><td colspan="5" class="placeholder">[个股数据待填充]</td></tr>'
+        stock_rows = '<tr><td colspan="4" class="placeholder">[个股数据待填充]</td></tr>'
     if not etf_rows:
-        etf_rows = '<tr><td colspan="5" class="placeholder">[ETF数据待填充]</td></tr>'
+        etf_rows = '<tr><td colspan="4" class="placeholder">[ETF数据待填充]</td></tr>'
 
     return f"""
 <div class="section" id="section1">
@@ -170,7 +167,7 @@ def _build_market_data_section(data):
 <h3>1.1 指数数据</h3>
 <table class="data-table">
 <thead>
-<tr><th>指数名称</th><th>指数代码</th><th>当前最新点数</th><th>时间戳</th><th>数据来源</th></tr>
+<tr><th>指数名称</th><th>指数代码</th><th>当前最新点数</th><th>时间戳</th></tr>
 </thead>
 <tbody>
 {index_rows}
@@ -180,7 +177,7 @@ def _build_market_data_section(data):
 <h3>1.2 个股数据</h3>
 <table class="data-table">
 <thead>
-<tr><th>股票名称</th><th>股票代码</th><th>当前最新价格(HKD)</th><th>时间戳</th><th>数据来源</th></tr>
+<tr><th>股票名称</th><th>股票代码</th><th>当前最新价格(HKD)</th><th>时间戳</th></tr>
 </thead>
 <tbody>
 {stock_rows}
@@ -190,7 +187,7 @@ def _build_market_data_section(data):
 <h3>1.3 ETF数据</h3>
 <table class="data-table">
 <thead>
-<tr><th>ETF名称</th><th>ETF代码</th><th>当前最新价格(HKD)</th><th>时间戳</th><th>数据来源</th></tr>
+<tr><th>ETF名称</th><th>ETF代码</th><th>当前最新价格(HKD)</th><th>时间戳</th></tr>
 </thead>
 <tbody>
 {etf_rows}
@@ -243,39 +240,39 @@ def _build_index_analysis_section(data):
 <p class="placeholder">[指数研判待填充]</p>
 </div>"""
 
-    cards = ""
+    rows = ""
     for ia in items:
-        probs = ia.get("trend_probs", {})
-        reasons = ia.get("trend_reasons", {})
-        trend_items = []
-        for scenario, prob in probs.items():
-            reason = reasons.get(scenario, "")
-            if reason:
-                trend_items.append(f"<li><strong>{scenario}（{prob}%）</strong>：{_esc(reason)}</li>")
-            else:
-                trend_items.append(f"<li><strong>{scenario}（{prob}%）</strong></li>")
-
-        trend_list = "\n".join(trend_items)
-        current = _fmt_price(ia.get("current"))
-        high = _fmt_price(ia.get("high"))
-        low = _fmt_price(ia.get("low"))
-        high_pct = _fmt_pct(ia.get("current"), ia.get("high"))
-        low_pct = _fmt_pct(ia.get("current"), ia.get("low"))
-
-        cards += f"""
-<div class="index-card">
-<h4>{_esc(ia.get("name"))}（{_esc(ia.get("code"))}）| 当前点位：{current}</h4>
-<p style="margin: 8px 0;"><strong>未来半年趋势预判：</strong></p>
-<ul style="margin: 8px 0 8px 25px; padding-left: 0;">{trend_list}</ul>
-<p style="margin: 8px 0;"><strong>截止年底最高目标点数：</strong>{high}（涨幅 {high_pct}）</p>
-<p style="margin: 8px 0;"><strong>截止年底最低目标点数：</strong>{low}（跌幅 {low_pct}）</p>
-<p style="margin: 8px 0;"><strong>核心逻辑：</strong>{_esc(ia.get("logic"))}</p>
-</div>"""
+        high_rise = _fmt_pct(ia.get("current"), ia.get("high"))
+        low_fall = _fmt_pct(ia.get("current"), ia.get("low"))
+        trend_display = f"{_esc(ia.get('trend'))}<br>{_format_trend_probs(ia.get('trend_probs'))}"
+        rows += f"""<tr>
+<td>{_esc(ia.get("name"))}</td>
+<td>{_esc(ia.get("code"))}</td>
+<td>{_fmt_price(ia.get("current"))}</td>
+<td>{trend_display}</td>
+<td>{_fmt_price(ia.get("high"))}</td>
+<td>{high_rise}</td>
+<td>{_fmt_price(ia.get("low"))}</td>
+<td>{low_fall}</td>
+<td>{_esc(ia.get("logic"))}</td>
+</tr>"""
 
     return f"""
 <div class="section" id="section3">
 <h2>三、指数研判</h2>
-{cards}
+<table class="data-table">
+<thead>
+<tr>
+<th>指数名称</th><th>指数代码</th><th>当前最新点数</th>
+<th>未来半年趋势预判</th><th>未来半年最高目标点数</th><th>未来半年最高目标涨幅</th>
+<th>未来半年最低目标点数</th><th>未来半年最低目标跌幅</th>
+<th>核心逻辑</th>
+</tr>
+</thead>
+<tbody>
+{rows}
+</tbody>
+</table>
 </div>"""
 
 
@@ -310,10 +307,10 @@ def _build_stock_analysis_section(data):
 <thead>
 <tr>
 <th>股票名称</th><th>股票代码</th><th>当前最新价格(HKD)</th>
-<th>未来半年趋势预判</th><th>截止年底最高目标价</th><th>最高目标价涨幅</th>
-<th>截止年底最低目标价</th><th>最低目标价跌幅</th>
-<th>当前看多看空观点</th><th>当前仓位调整建议</th>
-<th>核心逻辑</th>
+<th>未来半年趋势预判</th><th>未来半年最高目标价</th><th>未来半年最高目标价涨幅</th>
+<th>未来半年最低目标价</th><th>未来半年最低目标价跌幅</th>
+<th>当前多空观点建议</th><th>当前仓位调整建议</th>
+<th>趋势预判核心逻辑</th>
 </tr>
 </thead>
 <tbody>
@@ -354,10 +351,10 @@ def _build_etf_analysis_section(data):
 <thead>
 <tr>
 <th>ETF名称</th><th>ETF代码</th><th>当前最新价格</th>
-<th>未来半年趋势预判</th><th>截止年底最高目标价</th><th>最高目标价涨幅</th>
-<th>截止年底最低目标价</th><th>最低目标价跌幅</th>
-<th>当前看多看空观点</th><th>当前仓位调整建议</th>
-<th>核心逻辑</th>
+<th>未来半年趋势预判</th><th>未来半年最高目标价</th><th>未来半年最高目标价涨幅</th>
+<th>未来半年最低目标价</th><th>未来半年最低目标价跌幅</th>
+<th>当前多空观点建议</th><th>当前仓位调整建议</th>
+<th>趋势预判核心逻辑</th>
 </tr>
 </thead>
 <tbody>

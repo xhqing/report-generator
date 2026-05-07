@@ -29,7 +29,7 @@ def _resolve_output_dir(output_dir: str) -> str:
 
 
 @mcp.tool()
-def generate_report(data: str = "{}", output_dir: str = "") -> str:
+def generate_report(data: str = "{}", output_dir: str = "", targets_json_path: str = "") -> str:
     """Generate a complete HTML research report from structured data and save to file.
 
     Args:
@@ -39,6 +39,8 @@ def generate_report(data: str = "{}", output_dir: str = "") -> str:
         output_dir: Absolute path to the directory where the report will be saved.
                     If not provided, falls back to the REPORT_OUTPUT_DIR environment variable.
                     One of them must be set to a valid absolute path.
+        targets_json_path: Absolute path to the targets.json file. Required for empty template
+                          generation to pre-fill analysis tables with target names and codes.
 
     Returns:
         JSON string with the saved file path or error message.
@@ -54,7 +56,7 @@ def generate_report(data: str = "{}", output_dir: str = "") -> str:
         return json.dumps({"error": f"Invalid JSON input: {e}"}, ensure_ascii=False)
 
     if not parsed:
-        parsed = get_empty_data()
+        parsed = get_empty_data(targets_json_path)
 
     try:
         html_content = render_report(parsed)
@@ -85,13 +87,17 @@ def generate_report(data: str = "{}", output_dir: str = "") -> str:
 
 
 @mcp.tool()
-def generate_empty_template() -> str:
-    """Generate an empty report template with placeholder structure.
+def generate_empty_template(targets_json_path: str) -> str:
+    """Generate an empty report template with targets pre-filled from a targets.json file.
+
+    Args:
+        targets_json_path: Absolute path to the targets.json file containing the indices,
+                          stocks, and ETFs to include in the analysis tables.
 
     Returns:
-        HTML report template with placeholder markers for each section.
+        HTML report template with target names, codes, and empty trend probabilities pre-filled.
     """
-    empty_data = get_empty_data()
+    empty_data = get_empty_data(targets_json_path)
     return render_report(empty_data)
 
 

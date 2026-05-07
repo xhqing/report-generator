@@ -16,6 +16,22 @@ def _fmt_price(val):
         return _esc(val)
 
 
+def _fmt_price_with_currency(val, currency):
+    if val is None or val == "":
+        if currency:
+            return f"NULL {currency}"
+        return "-"
+    try:
+        price_str = f"{float(val):,.2f}"
+    except (ValueError, TypeError):
+        if currency:
+            return f"{_esc(val)} {currency}"
+        return _esc(val)
+    if currency:
+        return f"{price_str} {currency}"
+    return price_str
+
+
 def _fmt_pct(current, target):
     if current is None or target is None:
         return "-"
@@ -140,7 +156,7 @@ def _build_market_data_section(data):
         stock_rows += f"""<tr>
 <td>{_esc(item.get("name"))}</td>
 <td>{_esc(item.get("code"))}</td>
-<td>{_fmt_price(item.get("price"))}</td>
+<td>{_fmt_price_with_currency(item.get("price"), item.get("currency", ""))}</td>
 <td>{_esc(item.get("timestamp"))}</td>
 </tr>"""
 
@@ -149,7 +165,7 @@ def _build_market_data_section(data):
         etf_rows += f"""<tr>
 <td>{_esc(item.get("name"))}</td>
 <td>{_esc(item.get("code"))}</td>
-<td>{_fmt_price(item.get("price"))}</td>
+<td>{_fmt_price_with_currency(item.get("price"), item.get("currency", ""))}</td>
 <td>{_esc(item.get("timestamp"))}</td>
 </tr>"""
 
@@ -177,7 +193,7 @@ def _build_market_data_section(data):
 <h3>1.2 个股数据</h3>
 <table class="data-table">
 <thead>
-<tr><th>股票名称</th><th>股票代码</th><th>当前最新价格(HKD)</th><th>时间戳</th></tr>
+<tr><th>股票名称</th><th>股票代码</th><th>当前最新价格</th><th>时间戳</th></tr>
 </thead>
 <tbody>
 {stock_rows}
@@ -187,7 +203,7 @@ def _build_market_data_section(data):
 <h3>1.3 ETF数据</h3>
 <table class="data-table">
 <thead>
-<tr><th>ETF名称</th><th>ETF代码</th><th>当前最新价格(HKD)</th><th>时间戳</th></tr>
+<tr><th>ETF名称</th><th>ETF代码</th><th>当前最新价格</th><th>时间戳</th></tr>
 </thead>
 <tbody>
 {etf_rows}
@@ -286,14 +302,15 @@ def _build_stock_analysis_section(data):
         high_rise = _fmt_pct(sa.get("price"), sa.get("high"))
         low_fall = _fmt_pct(sa.get("price"), sa.get("low"))
         trend_display = f"{_esc(sa.get('trend'))}<br>{_format_trend_probs(sa.get('trend_probs'))}"
+        currency = sa.get("currency", "")
         rows += f"""<tr>
 <td>{_esc(sa.get("name"))}</td>
 <td>{_esc(sa.get("code"))}</td>
-<td>{_fmt_price(sa.get("price"))}</td>
+<td>{_fmt_price_with_currency(sa.get("price"), currency)}</td>
 <td>{trend_display}</td>
-<td>{_fmt_price(sa.get("high"))}</td>
+<td>{_fmt_price_with_currency(sa.get("high"), currency)}</td>
 <td>{high_rise}</td>
-<td>{_fmt_price(sa.get("low"))}</td>
+<td>{_fmt_price_with_currency(sa.get("low"), currency)}</td>
 <td>{low_fall}</td>
 <td>{_esc(sa.get("view"))}</td>
 <td>{_esc(sa.get("position"))}</td>
@@ -306,7 +323,7 @@ def _build_stock_analysis_section(data):
 <table class="data-table">
 <thead>
 <tr>
-<th>股票名称</th><th>股票代码</th><th>当前最新价格(HKD)</th>
+<th>股票名称</th><th>股票代码</th><th>当前最新价格</th>
 <th>未来半年趋势预判</th><th>未来半年最高目标价</th><th>未来半年最高目标价涨幅</th>
 <th>未来半年最低目标价</th><th>未来半年最低目标价跌幅</th>
 <th>当前多空观点建议</th><th>当前仓位调整建议</th>
@@ -330,14 +347,15 @@ def _build_etf_analysis_section(data):
         high_rise = _fmt_pct(ea.get("price"), ea.get("high"))
         low_fall = _fmt_pct(ea.get("price"), ea.get("low"))
         trend_display = f"{_esc(ea.get('trend'))}<br>{_format_trend_probs(ea.get('trend_probs'))}"
+        currency = ea.get("currency", "")
         rows += f"""<tr>
 <td>{_esc(ea.get("name"))}</td>
 <td>{_esc(ea.get("code"))}</td>
-<td>{_fmt_price(ea.get("price"))}</td>
+<td>{_fmt_price_with_currency(ea.get("price"), currency)}</td>
 <td>{trend_display}</td>
-<td>{_fmt_price(ea.get("high"))}</td>
+<td>{_fmt_price_with_currency(ea.get("high"), currency)}</td>
 <td>{high_rise}</td>
-<td>{_fmt_price(ea.get("low"))}</td>
+<td>{_fmt_price_with_currency(ea.get("low"), currency)}</td>
 <td>{low_fall}</td>
 <td>{_esc(ea.get("view"))}</td>
 <td>{_esc(ea.get("position"))}</td>

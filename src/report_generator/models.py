@@ -245,11 +245,18 @@ REPORT_DATA_SCHEMA = {
 def _flatten_items(*sections):
     items = []
     for section in sections:
-        for item in section:
+        currency = ""
+        sub_items = section
+        if isinstance(section, tuple):
+            currency, sub_items = section
+        for item in sub_items:
             name = item.get("name", "")
             code = item.get("code", "")
             if name and code:
-                items.append({"name": name, "code": code})
+                entry = {"name": name, "code": code}
+                if currency:
+                    entry["currency"] = currency
+                items.append(entry)
     return items
 
 
@@ -268,19 +275,19 @@ def _load_targets(targets_json_path):
     us = targets.get("us_shares", {})
 
     indices = _flatten_items(
-        a.get("index_major", []), a.get("index_sector", []),
-        hk.get("index_major", []), hk.get("index_sector", []),
-        us.get("index_major", []), us.get("index_sector", []),
+        ("CNY", a.get("index_major", [])), ("CNY", a.get("index_sector", [])),
+        ("HKD", hk.get("index_major", [])), ("HKD", hk.get("index_sector", [])),
+        ("USD", us.get("index_major", [])), ("USD", us.get("index_sector", [])),
     )
     stocks = _flatten_items(
-        a.get("sse_stocks", []), a.get("szse_stocks", []),
-        hk.get("hkex_stocks", []),
-        us.get("stocks", []), us.get("adr", []),
+        ("CNY", a.get("sse_stocks", [])), ("CNY", a.get("szse_stocks", [])),
+        ("HKD", hk.get("hkex_stocks", [])),
+        ("USD", us.get("stocks", [])), ("USD", us.get("adr", [])),
     )
     etfs = _flatten_items(
-        a.get("sse_etf", []), a.get("szse_etf", []),
-        hk.get("hkex_etf", []),
-        us.get("etf", []),
+        ("CNY", a.get("sse_etf", [])), ("CNY", a.get("szse_etf", [])),
+        ("HKD", hk.get("hkex_etf", [])),
+        ("USD", us.get("etf", [])),
     )
 
     _logger.info(f"Loaded targets from {targets_json_path}: indices={len(indices)}, stocks={len(stocks)}, etfs={len(etfs)}")
@@ -310,6 +317,7 @@ def get_empty_data(targets_json_path=""):
             "name": s.get("name", ""),
             "code": s.get("code", ""),
             "price": "",
+            "currency": s.get("currency", ""),
             "trend": "",
             "trend_probs": dict(EMPTY_TREND_PROBS),
             "high": 0,
@@ -325,6 +333,7 @@ def get_empty_data(targets_json_path=""):
             "name": e.get("name", ""),
             "code": e.get("code", ""),
             "price": "",
+            "currency": e.get("currency", ""),
             "trend": "",
             "trend_probs": dict(EMPTY_TREND_PROBS),
             "high": 0,
@@ -334,12 +343,41 @@ def get_empty_data(targets_json_path=""):
             "logic": "",
         })
 
+    index_data = []
+    for idx in targets.get("indices", []):
+        index_data.append({
+            "name": idx.get("name", ""),
+            "code": idx.get("code", ""),
+            "price": "",
+            "timestamp": "",
+        })
+
+    stock_data = []
+    for s in targets.get("stocks", []):
+        stock_data.append({
+            "name": s.get("name", ""),
+            "code": s.get("code", ""),
+            "price": "",
+            "currency": s.get("currency", ""),
+            "timestamp": "",
+        })
+
+    etf_data = []
+    for e in targets.get("etfs", []):
+        etf_data.append({
+            "name": e.get("name", ""),
+            "code": e.get("code", ""),
+            "price": "",
+            "currency": e.get("currency", ""),
+            "timestamp": "",
+        })
+
     return {
         "report_date": "",
         "generation_time": "",
-        "index_data": [],
-        "stock_data": [],
-        "etf_data": [],
+        "index_data": index_data,
+        "stock_data": stock_data,
+        "etf_data": etf_data,
         "future_events": [],
         "index_analysis": index_analysis,
         "stock_analysis": stock_analysis,

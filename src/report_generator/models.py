@@ -262,7 +262,10 @@ def _flatten_items(*sections):
 
 def _load_targets(targets_json_path):
     if not targets_json_path:
-        return {"raw": {}}
+        targets_json_path = os.environ.get("TARGETS_JSON_PATH", "")
+        if not targets_json_path:
+            _logger.warning("targets_json_path not provided and TARGETS_JSON_PATH env var not set, targets will be empty")
+            return {"raw": {}}
     if not os.path.isabs(targets_json_path):
         raise ValueError(f"targets_json_path must be an absolute path, got: {targets_json_path}")
     if not os.path.exists(targets_json_path):
